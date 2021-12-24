@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -24,10 +26,19 @@ var (
 // Data Addon data passed in the secret.
 // TODO: Replace Git* fields with fetching the info from the hub
 type Data struct {
-	Application uint   `json:"application"`
-	GitURL      string `json:"git_url"`
-	GitBranch   string `json:"git_branch"`
-	GitPath     string `json:"git_path"`
+	Application uint `json:"application"`
+	Git         struct {
+		URL    string `json:"url"`
+		Branch string `json:"branch"`
+		Path   string `json:"path"`
+	} `json:"git"`
+	Maven struct {
+		File string `json:"file"`
+	} `json:"maven"`
+	Windup struct {
+		Targets  []string `json:"targets"`
+		Packages []string `json:"packages"`
+	} `json:"windup"`
 }
 
 //
@@ -39,12 +50,6 @@ func main() {
 	// Get the addon data associated with the task.
 	d := &Data{}
 	_ = addon.DataWith(d)
-
-	fmt.Printf("Data passed to the addon:\n")
-	fmt.Printf("  - Application ID: %d\n", d.Application)
-	fmt.Printf("  - Git URL: %s\n", d.GitURL)
-	fmt.Printf("  - Git Branch: %s\n", d.GitBranch)
-	fmt.Printf("  - Git Path: %s\n", d.GitPath)
 
 	// Error handler
 	defer func() {
@@ -60,19 +65,18 @@ func main() {
 	_ = addon.Started()
 
 	// Validate the addon data and enforce defaults
-	if d.Application == 0 {
-		fmt.Printf("Field 'application' is missing in addon data\n")
-		_ = addon.Failed("field 'application' is missing in addon data")
-		os.Exit(1)
-	}
-	if d.GitURL == "" {
-		fmt.Printf("Field 'git_url' is missing in addon data\n")
-		_ = addon.Failed("field 'git_url' is missing in addon data")
-		os.Exit(1)
+	err = validateData(d)
+	if err != nil {
+		return
 	}
 
 	// Clone Git repository
-	cloneGitRepository(d)
+	if d.Git.URL != "" {
+		err = cloneGitRepository(d)
+		if err != nil {
+			return
+		}
+	}
 
 	// Create the bucket to store the result
 	bucket, err := createBucket(d)
@@ -91,6 +95,35 @@ func main() {
 }
 
 //
+// Validate the addon data and enforce defaults
+func validateData(d *Data) (err error) {
+	if d.Application == 0 {
+		err = errors.New("Field 'application' is missing in addon data")
+		return
+	}
+	if d.Git.URL == "" && d.Maven.File == "" {
+		err = errors.New("neither Git URL, nor Maven File was provided")
+		return
+	}
+	if d.Git.URL != "" && d.Maven.File != "" {
+		err = errors.New("Git URL and Maven File have both been provided")
+		return
+	}
+	if len(d.Windup.Targets) == 0 {
+		fmt.Printf("No Windup target set. Using 'cloud-readiness'.\n")
+		d.Windup.Targets = append(d.Windup.Targets, "cloud-readiness")
+	}
+
+	dJSON, err := json.MarshalIndent(d, "", "  ")
+	if err != nil {
+		return
+	}
+	fmt.Printf("Data used by the addon:\n%s\n", string(dJSON))
+
+	return
+}
+
+//
 // Clone Git repository
 // TODO: Add support for non anonymous Git operations
 // TODO: Add support for fetching credentials from Hub
@@ -99,14 +132,13 @@ func cloneGitRepository(d *Data) (err error) {
 	_ = addon.Activity("cloning Git repository")
 
 	gitCloneOptions := &git.CloneOptions{
-		URL:               d.GitURL,
-		ReferenceName:     plumbing.ReferenceName(d.GitBranch),
+		URL:               d.Git.URL,
+		ReferenceName:     plumbing.ReferenceName(d.Git.Branch),
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	}
 	fmt.Printf("Git clone options\n")
 	fmt.Printf("  - URL: %s\n", gitCloneOptions.URL)
 	fmt.Printf("  - ReferenceName: %s\n", gitCloneOptions.ReferenceName)
-	//fmt.Printf("  - RecurseSubmodules: %s", git.DefaultSubmoduleRecursionDepth)
 
 	_, err = git.PlainClone("/tmp/app", false, gitCloneOptions)
 	if err != nil {
@@ -124,20 +156,40 @@ func execWindup(d *Data, bucket *api.Bucket) (err error) {
 	fmt.Printf("Analyzing the repository\n")
 	_ = addon.Activity("analyzing the repository")
 
-	appPath := "/tmp/app/" + d.GitPath
-	fmt.Printf("Application path to analyze: %s\n", appPath)
+	// Build mta-cli command arguments
+	args := []string{
+		"--batchMode",
+		"--output", bucket.Path,
+	}
 
-	cmd := exec.Command("/opt/mta-cli/bin/mta-cli",
-		"--batchMode", "--sourceMode", "--overwrite",
-		"--target", "cloud-readiness",
-		"--input", appPath, "--output", bucket.Path,
-	)
+	target := []string{"--target"}
+	target = append(target, d.Windup.Targets...)
+	args = append(args, target...)
+
+	input := []string{"--input"}
+	if d.Git.URL != "" {
+		srcInput := []string{"/tmp/app" + d.Git.Path, "--sourceMode"}
+		input = append(input, srcInput...)
+	}
+	if d.Maven.File != "" {
+		input = append(input, d.Maven.File)
+	}
+	args = append(args, input...)
+
+	if len(d.Windup.Packages) > 0 {
+		packages := []string{"--packages"}
+		packages = append(packages, d.Windup.Packages...)
+		args = append(args, packages...)
+	}
+
+	// Invoke the mta-cli command
+	cmd := exec.Command("/opt/mta-cli/bin/mta-cli", args...)
 	cmd.Dir = "/opt/mta-cli"
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	fmt.Printf("Calling Windup...\n")
+	fmt.Printf("Calling mta-cli...\n")
 	err = cmd.Run()
 	if err != nil {
 		return
