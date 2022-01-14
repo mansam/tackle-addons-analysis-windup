@@ -1,6 +1,6 @@
 GOBIN ?= ${GOPATH}/bin
 
-all: addon-adapter
+all: addon
 
 fmt:
 	go fmt ./...
@@ -8,5 +8,5 @@ fmt:
 vet:
 	go vet ./...
 
-addon-adapter: fmt vet
-	go build -ldflags="-w -s" -o bin/addon-adapter github.com/konveyor/tackle-addons-analysis-windup
+addon: fmt vet
+	go build -ldflags="-w -s" -o bin/addon github.com/konveyor/tackle-addons-analysis-windup/cmd
