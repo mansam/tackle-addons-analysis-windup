@@ -21,13 +21,11 @@ const (
 //
 // Data Addon data passed in the secret.
 type Data struct {
-	Application uint `json:"application"`
-	Repository  uint `json:"repository"`
-	Identity    uint `json:"identity"`
-	Windup      struct {
-		Targets  []string `json:"targets"`
-		Packages []string `json:"packages"`
-	} `json:"windup"`
+	Application  uint     `json:"application"`
+	Binary       bool     `json:"binary"`
+	Dependencies bool     `json:"dependencies"`
+	Targets      []string `json:"targets"`
+	Packages     []string `json:"packages"`
 }
 
 // validate settings.
@@ -37,17 +35,21 @@ func (d *Data) validate() (err error) {
 		err = errors.New("Application not specified.")
 		return
 	}
-	if d.Repository == 0 {
-		err = errors.New("Repository not specified.")
-		return
-	}
-	if len(d.Windup.Targets) == 0 {
-		d.Windup.Targets = append(
-			d.Windup.Targets,
-			DefaultTarget)
-		return
+	if len(d.Targets) == 0 {
+		d.Targets = []string{DefaultTarget}
 	}
 
+	return
+}
+
+//
+// CreateBucket to store windup report.
+func createBucket(d *Data) (bucket *api.Bucket, err error) {
+	bucket = &api.Bucket{}
+	bucket.CreateUser = "addon"
+	bucket.Name = "AnalysisWindup"
+	bucket.ApplicationID = d.Application
+	err = addon.Bucket.Create(bucket)
 	return
 }
 
@@ -68,34 +70,40 @@ func main() {
 	}()
 	// Report addon has started
 	_ = addon.Started()
-	_ = addon.Total(2)
 	// Validate the addon data.
 	err = d.validate()
 	if err != nil {
 		return
 	}
-	//
-	repository, err := newRepository(d)
-	if err != nil {
-		return
-	}
-	err = repository.Init("/tmp")
-	if err == nil {
-		_ = addon.Increment()
-	} else {
-		return
+	// Run windup.
+	windup := Windup{}
+	// Fetch repository.
+	if !d.Binary {
+		_ = addon.Total(2)
+		appRepository, err := addon.Repository.ByApplication(d.Application)
+		if err != nil {
+			return
+		}
+		repository, err := newRepository(appRepository.ID)
+		if err != nil {
+			return
+		}
+		err = repository.Fetch("/tmp")
+		if err == nil {
+			_ = addon.Increment()
+			windup.repository = repository
+		} else {
+			return
+		}
 	}
 	// Create the bucket.
 	bucket, err := createBucket(d)
-	if err != nil {
+	if err == nil {
+		windup.bucket = bucket
+	} else {
 		return
 	}
 	// Run windup.
-	windup := Windup{
-		Data:       d,
-		repository: repository,
-		bucket:     bucket,
-	}
 	err = windup.Run()
 	if err == nil {
 		_ = addon.Increment()
@@ -105,15 +113,4 @@ func main() {
 
 	// Task update: The addon has succeeded
 	_ = addon.Succeeded()
-}
-
-//
-// CreateBucket to store windup report.
-func createBucket(d *Data) (bucket *api.Bucket, err error) {
-	bucket = &api.Bucket{}
-	bucket.CreateUser = "addon"
-	bucket.Name = "AnalysisWindup"
-	bucket.ApplicationID = d.Application
-	err = addon.Bucket.Create(bucket)
-	return
 }

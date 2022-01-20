@@ -9,13 +9,14 @@ import (
 //
 // Windup application analyzer.
 type Windup struct {
-	*Data
 	repository Repository
 	bucket     *api.Bucket
+	packages   []string
+	targets    []string
 }
 
 //
-// run windup.
+// Run windup.
 func (r *Windup) Run() (err error) {
 	_ = addon.Activity("Running windup.")
 	options := r.options()
@@ -42,13 +43,13 @@ func (r *Windup) options() (opt Options) {
 		r.bucket.Path,
 	}
 	options.add("--output", r.bucket.Path)
-	options.add("--target", r.Windup.Targets...)
+	options.add("--target", r.targets...)
 	options.add("--input", r.repository.Path())
-	if !r.repository.Binary() {
+	if r.repository == nil {
 		options.add("--sourceMode")
 	}
-	if len(r.Windup.Packages) > 0 {
-		options.add("--packages", r.Windup.Packages...)
+	if len(r.packages) > 0 {
+		options.add("--packages", r.packages...)
 	}
 	return
 }

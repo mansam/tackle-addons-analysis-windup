@@ -346,8 +346,8 @@ github.com/mailru/easyjson v0.0.0-20160728113105-d5b7844b561a/go.mod h1:C1wdFJiN
 github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.7.0/go.mod h1:KAzv3t3aY1NaHWoQz1+4F1ccyAH66Jk7yos7ldAVICs=
-github.com/mansam/tackle-hub v0.0.0-20220113183746-bd7e6376a6ad h1:GR8Mrbm7DvCUCjykEVXvpfeEzYhYDoeaKiQuLwjQwGA=
-github.com/mansam/tackle-hub v0.0.0-20220113183746-bd7e6376a6ad/go.mod h1:4bYZko5Qk5Rv7ltPilVJ+38EfdJAmhH9gEWnrRe8VMI=
+github.com/mansam/tackle-hub v0.0.0-20220120201016-0380820d2649 h1:uJk9gWhpkjGaIXGFs/YTyX5WeB2myXjshxd705yA+5E=
+github.com/mansam/tackle-hub v0.0.0-20220120201016-0380820d2649/go.mod h1:VkCAvZP17psXiS3ezv35MVlJ2gBxg/FH4havRgjQluE=
 github.com/matryer/is v1.2.0 h1:92UTHpy8CDwaJ08GqLDzhhuixiBUUD1p3AU6PHddz4A=
 github.com/matryer/is v1.2.0/go.mod h1:2fLPjFQM9rhQ15aVEtbuwhJinnOqrmgXPNdZsdwlWXA=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=

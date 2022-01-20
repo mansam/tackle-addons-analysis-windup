@@ -4,10 +4,10 @@ go 1.16
 
 require (
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/konveyor/tackle-hub v0.0.0-00010101000000-000000000000
+	github.com/konveyor/tackle-hub v0.0.0-00000000000000-000000000000
 )
 
-replace github.com/konveyor/tackle-hub => github.com/mansam/tackle-hub v0.0.0-20220113183746-bd7e6376a6ad
+replace github.com/konveyor/tackle-hub => github.com/mansam/tackle-hub v0.0.0-20220120201016-0380820d2649
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
 

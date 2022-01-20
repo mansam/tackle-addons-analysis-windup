@@ -7,8 +7,8 @@ import (
 	"github.com/konveyor/tackle-hub/api"
 )
 
-func newRepository(d *Data) (rp Repository, err error) {
-	repository, err := addon.Repository.Get(d.Repository)
+func newRepository(id uint) (rp Repository, err error) {
+	repository, err := addon.Repository.Get(id)
 	if err != nil {
 		return
 	}
@@ -25,9 +25,8 @@ func newRepository(d *Data) (rp Repository, err error) {
 }
 
 type Repository interface {
-	Init(path string) (err error)
+	Fetch(path string) (err error)
 	Path() string
-	Binary() bool
 }
 
 type Git struct {
@@ -35,7 +34,7 @@ type Git struct {
 	path string
 }
 
-func (r *Git) Init(path string) (err error) {
+func (r *Git) Fetch(path string) (err error) {
 	r.path = path
 	gitCloneOptions := &git.CloneOptions{
 		URL:               r.URL,
@@ -52,8 +51,4 @@ func (r *Git) Init(path string) (err error) {
 
 func (r *Git) Path() string {
 	return r.path
-}
-
-func (r *Git) Binary() bool {
-	return false
 }
