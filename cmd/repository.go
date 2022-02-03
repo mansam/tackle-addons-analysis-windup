@@ -5,6 +5,8 @@ import (
 	"github.com/konveyor/tackle-hub/api"
 )
 
+//
+// Factory.
 func newRepository(id uint) (rp Repository, err error) {
 	repository, err := addon.Repository.Get(id)
 	if err != nil {
@@ -16,22 +18,28 @@ func newRepository(id uint) (rp Repository, err error) {
 	case "svn":
 	case "mvn":
 	default:
-		err = errors.New("")
+		err = errors.New("unknown kind")
 	}
 
 	return
 }
 
+//
+// Repository interface.
 type Repository interface {
 	Fetch(path string) (err error)
 	Path() string
 }
 
+//
+// Git repository.
 type Git struct {
 	*api.Repository
 	path string
 }
 
+//
+// Fetch the repository.
 func (r *Git) Fetch(path string) (err error) {
 	r.path = path
 	cmd := Command{Path: "/usr/bin/git"}
@@ -44,6 +52,8 @@ func (r *Git) Fetch(path string) (err error) {
 	return
 }
 
+//
+// Path to the fetched repository.
 func (r *Git) Path() string {
 	return r.path
 }
