@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"github.com/konveyor/tackle-hub/api"
-	"os/exec"
 )
 
 //
@@ -19,13 +17,9 @@ type Windup struct {
 // Run windup.
 func (r *Windup) Run() (err error) {
 	_ = addon.Activity("Running windup.")
-	options := r.options()
-	cmd := exec.Command("/opt/windup", options...)
+	cmd := Command{Path: "/opt/windup"}
+	cmd.Options = r.options()
 	cmd.Dir = "/opt/mta-cli"
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
 		return
@@ -52,15 +46,4 @@ func (r *Windup) options() (opt Options) {
 		options.add("--packages", r.packages...)
 	}
 	return
-}
-
-//
-// Options are CLI options.
-type Options []string
-
-//
-// add
-func (a *Options) add(option string, s ...string) {
-	*a = append(*a, option)
-	*a = append(*a, s...)
 }

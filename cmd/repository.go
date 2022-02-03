@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/konveyor/tackle-hub/api"
 )
 
@@ -36,15 +34,9 @@ type Git struct {
 
 func (r *Git) Fetch(path string) (err error) {
 	r.path = path
-	ref := plumbing.ReferenceName(r.Branch)
-	_, err = git.PlainClone(
-		path,
-		false,
-		&git.CloneOptions{
-			RecurseSubmodules: 10,
-			ReferenceName:     ref,
-			URL:               r.URL,
-		})
+	cmd := Command{Path: "/usr/bin/git"}
+	cmd.Options.add("clone", r.URL)
+	err = cmd.Run()
 	if err != nil {
 		return
 	}
