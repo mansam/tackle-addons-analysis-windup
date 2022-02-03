@@ -36,12 +36,15 @@ type Git struct {
 
 func (r *Git) Fetch(path string) (err error) {
 	r.path = path
-	gitCloneOptions := &git.CloneOptions{
-		URL:               r.URL,
-		ReferenceName:     plumbing.ReferenceName(r.Branch),
-		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-	}
-	_, err = git.PlainClone(path, false, gitCloneOptions)
+	ref := plumbing.ReferenceName(r.Branch)
+	_, err = git.PlainClone(
+		path,
+		false,
+		&git.CloneOptions{
+			RecurseSubmodules: 10,
+			ReferenceName:     ref,
+			URL:               r.URL,
+		})
 	if err != nil {
 		return
 	}

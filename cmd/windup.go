@@ -20,7 +20,7 @@ type Windup struct {
 func (r *Windup) Run() (err error) {
 	_ = addon.Activity("Running windup.")
 	options := r.options()
-	cmd := exec.Command("/opt/mta-cli/bin/mta-cli", options...)
+	cmd := exec.Command("/opt/windup", options...)
 	cmd.Dir = "/opt/mta-cli"
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
