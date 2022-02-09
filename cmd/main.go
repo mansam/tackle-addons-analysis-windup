@@ -19,13 +19,21 @@ const (
 )
 
 //
+// Artifact uploaded.
+type Artifact struct {
+	Bucket uint   `json:"bucket" binding:"required"`
+	Path   string `json:"path" binding:"required"`
+}
+
+//
 // Data Addon data passed in the secret.
 type Data struct {
-	Application  uint     `json:"application"`
-	Binary       bool     `json:"binary"`
-	Dependencies bool     `json:"dependencies"`
-	Targets      []string `json:"targets"`
-	Packages     []string `json:"packages"`
+	Application  uint      `json:"application" binding:"required"`
+	Binary       bool      `json:"binary"`
+	Dependencies bool      `json:"dependencies"`
+	Targets      []string  `json:"targets"`
+	Packages     []string  `json:"packages"`
+	Artifact     *Artifact `json:"artifact"`
 }
 
 // validate settings.
@@ -43,13 +51,13 @@ func (d *Data) validate() (err error) {
 }
 
 //
-// CreateBucket to store windup report.
-func createBucket(d *Data) (bucket *api.Bucket, err error) {
-	bucket = &api.Bucket{}
-	bucket.CreateUser = "addon"
-	bucket.Name = "AnalysisWindup"
-	bucket.ApplicationID = d.Application
-	err = addon.Bucket.Create(bucket)
+// ensureBucket to store windup report.
+func ensureBucket(d *Data) (bucket *api.Bucket, err error) {
+	bucket, err = addon.Bucket.Ensure(d.Application, "Windup")
+	if err != nil {
+		return
+	}
+	err = addon.Bucket.Purge(bucket)
 	return
 }
 
@@ -57,9 +65,6 @@ func createBucket(d *Data) (bucket *api.Bucket, err error) {
 // main
 func main() {
 	var err error
-	// Get the addon data associated with the task.
-	d := &Data{}
-	_ = addon.DataWith(d)
 	// Error handling.
 	defer func() {
 		if err != nil {
@@ -68,10 +73,23 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+	// Get the addon data associated with the task.
+	d := &Data{}
+	err = addon.DataWith(d)
+	if err != nil {
+		return
+	}
 	// Report addon has started
-	_ = addon.Started()
+	err = addon.Started()
+	if err != nil {
+		return
+	}
 	// Validate the addon data.
 	err = d.validate()
+	if err != nil {
+		return
+	}
+	application, err := addon.Application.Get(d.Application)
 	if err != nil {
 		return
 	}
@@ -80,11 +98,11 @@ func main() {
 	// Fetch repository.
 	if !d.Binary {
 		_ = addon.Total(2)
-		appRepository, err := addon.Repository.ByApplication(d.Application)
-		if err != nil {
+		if application.Repository == nil {
+			err = errors.New("Application repository not defined.")
 			return
 		}
-		repository, err := newRepository(appRepository.ID)
+		repository, err := newRepository(application.Repository)
 		if err != nil {
 			return
 		}
@@ -97,7 +115,7 @@ func main() {
 		}
 	}
 	// Create the bucket.
-	bucket, err := createBucket(d)
+	bucket, err := ensureBucket(d)
 	if err == nil {
 		windup.bucket = bucket
 	} else {

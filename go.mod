@@ -3,11 +3,12 @@ module github.com/konveyor/tackle-addons-analysis-windup
 go 1.16
 
 require (
-	github.com/go-git/go-git/v5 v5.4.2
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/konveyor/tackle-hub v0.0.0-00000000000000-000000000000
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
-replace github.com/konveyor/tackle-hub => github.com/mansam/tackle-hub v0.0.0-20220120201016-0380820d2649
+replace github.com/konveyor/tackle-hub => github.com/mansam/tackle-hub v0.0.0-20220208221527-70ecd7860634
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
 

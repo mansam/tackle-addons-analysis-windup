@@ -3,18 +3,24 @@ package main
 import (
 	"errors"
 	"github.com/konveyor/tackle-hub/api"
+	pathlib "path"
+	"strings"
 )
 
 //
 // Factory.
-func newRepository(id uint) (rp Repository, err error) {
-	repository, err := addon.Repository.Get(id)
-	if err != nil {
-		return
+func newRepository(r *api.Repository) (rp Repository, err error) {
+	kind := r.Kind
+	if kind == "" {
+		if strings.HasSuffix(r.URL, ".git") {
+			kind = "git"
+		} else {
+			kind = "svn"
+		}
 	}
-	switch repository.Kind {
+	switch r.Kind {
 	case "git":
-		rp = &Git{Repository: repository}
+		rp = &Git{Repository: r}
 	case "svn":
 	case "mvn":
 	default:
@@ -55,5 +61,8 @@ func (r *Git) Fetch(path string) (err error) {
 //
 // Path to the fetched repository.
 func (r *Git) Path() string {
-	return r.path
+	dir := strings.Split(pathlib.Base(r.URL), ".")[0]
+	return pathlib.Join(
+		r.path,
+		dir)
 }
