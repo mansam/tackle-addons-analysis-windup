@@ -18,7 +18,7 @@ func newRepository(r *api.Repository) (rp Repository, err error) {
 			kind = "svn"
 		}
 	}
-	switch r.Kind {
+	switch kind {
 	case "git":
 		rp = &Git{Repository: r}
 	case "svn":
@@ -49,7 +49,7 @@ type Git struct {
 func (r *Git) Fetch(path string) (err error) {
 	r.path = path
 	cmd := Command{Path: "/usr/bin/git"}
-	cmd.Options.add("clone", r.URL)
+	cmd.Options.add("clone", r.URL, path)
 	err = cmd.Run()
 	if err != nil {
 		return

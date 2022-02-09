@@ -97,7 +97,10 @@ func main() {
 	windup := Windup{}
 	// Fetch repository.
 	if !d.Binary {
-		_ = addon.Total(2)
+		err = addon.Total(2)
+		if err != nil {
+			return
+		}
 		if application.Repository == nil {
 			err = errors.New("Application repository not defined.")
 			return
@@ -106,9 +109,12 @@ func main() {
 		if err != nil {
 			return
 		}
-		err = repository.Fetch("/tmp")
+		err = repository.Fetch("/tmp/git")
 		if err == nil {
-			_ = addon.Increment()
+			err = addon.Increment()
+			if err != nil {
+				return
+			}
 			windup.repository = repository
 		} else {
 			return
@@ -124,7 +130,10 @@ func main() {
 	// Run windup.
 	err = windup.Run()
 	if err == nil {
-		_ = addon.Increment()
+		err = addon.Increment()
+		if err != nil {
+			return
+		}
 	} else {
 		return
 	}
