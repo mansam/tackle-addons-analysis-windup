@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/konveyor/tackle-hub/api"
+	"os"
 )
 
 //
@@ -16,10 +17,14 @@ type Windup struct {
 //
 // Run windup.
 func (r *Windup) Run() (err error) {
-	_ = addon.Activity("Running windup.")
+	_ = os.Mkdir("/tmp/windup", 0755)
+	err = addon.Activity("Running windup.")
+	if err != nil {
+		return
+	}
 	cmd := Command{Path: "/opt/windup"}
 	cmd.Options = r.options()
-	cmd.Dir = "/opt/mta-cli"
+	cmd.Dir = "/tmp/windup"
 	err = cmd.Run()
 	if err != nil {
 		return
@@ -30,16 +35,15 @@ func (r *Windup) Run() (err error) {
 
 //
 // options builds CLL options.
-func (r *Windup) options() (opt Options) {
-	options := Options{
+func (r *Windup) options() (options Options) {
+	options = Options{
 		"--batchMode",
 		"--output",
 		r.bucket.Path,
 	}
-	options.add("--output", r.bucket.Path)
 	options.add("--target", r.targets...)
 	options.add("--input", r.repository.Path())
-	if r.repository == nil {
+	if r.repository != nil {
 		options.add("--sourceMode")
 	}
 	if len(r.packages) > 0 {

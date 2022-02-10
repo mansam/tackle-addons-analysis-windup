@@ -327,8 +327,8 @@ github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN
 github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=
 github.com/mailru/easyjson v0.7.0/go.mod h1:KAzv3t3aY1NaHWoQz1+4F1ccyAH66Jk7yos7ldAVICs=
 github.com/mailru/easyjson v0.7.6/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
-github.com/mansam/tackle-hub v0.0.0-20220208221527-70ecd7860634 h1:bYw4p8Up7GSRqo1NZSN6F2mFRBUcro+C2QXQW7ec31Q=
-github.com/mansam/tackle-hub v0.0.0-20220208221527-70ecd7860634/go.mod h1:5wf+yvtgYZMM2CX9GeRrGoBVJ6zNx5CF1n+FtC0jga0=
+github.com/mansam/tackle-hub v0.0.0-20220210024044-1c9a89800680 h1:m+F8lrzC5SJ6HDQmcJ5v/XFEZTDm7wZ9PI9m1XJwVfg=
+github.com/mansam/tackle-hub v0.0.0-20220210024044-1c9a89800680/go.mod h1:5wf+yvtgYZMM2CX9GeRrGoBVJ6zNx5CF1n+FtC0jga0=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-colorable v0.1.1/go.mod h1:FuOcm+DKB9mbwrcAfNl7/TZVBZ6rcnceauSikq3lYCQ=
 github.com/mattn/go-colorable v0.1.6/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
