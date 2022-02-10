@@ -7,10 +7,9 @@ import (
 )
 
 var (
-	// addon adapter.
+	// hub integration.
 	addon = hub.Addon
-	// Logger
-	log = hub.Log
+	Log = hub.Log
 )
 
 const (
