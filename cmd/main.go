@@ -4,7 +4,6 @@ import (
 	"errors"
 	hub "github.com/konveyor/tackle-hub/addon"
 	"github.com/konveyor/tackle-hub/api"
-	"os"
 )
 
 var (
@@ -64,23 +63,13 @@ func ensureBucket(d *Data) (bucket *api.Bucket, err error) {
 //
 // main
 func main() {
-	var err error
-	// Error handling.
-	defer func() {
-		if err != nil {
-			log.Error(err, "Addon failed.")
-			_ = addon.Failed(err.Error())
-			os.Exit(1)
-		}
-	}()
+	addon.Run(adapter)
+}
+
+func adapter() (err error) {
 	// Get the addon data associated with the task.
 	d := &Data{}
 	err = addon.DataWith(d)
-	if err != nil {
-		return
-	}
-	// Report addon has started
-	err = addon.Started()
 	if err != nil {
 		return
 	}
@@ -97,25 +86,20 @@ func main() {
 	windup := Windup{}
 	// Fetch repository.
 	if !d.Binary {
-		err = addon.Total(2)
-		if err != nil {
-			return
-		}
+		addon.Total(2)
 		if application.Repository == nil {
 			err = errors.New("Application repository not defined.")
 			return
 		}
-		repository, err := newRepository(application.Repository)
+		var r Repository
+		r, err = newRepository(application.Repository)
 		if err != nil {
 			return
 		}
-		err = repository.Fetch("/tmp/git")
+		err = r.Fetch("/tmp/git")
 		if err == nil {
-			err = addon.Increment()
-			if err != nil {
-				return
-			}
-			windup.repository = repository
+			addon.Increment()
+			windup.repository = r
 		} else {
 			return
 		}
@@ -130,14 +114,10 @@ func main() {
 	// Run windup.
 	err = windup.Run()
 	if err == nil {
-		err = addon.Increment()
-		if err != nil {
-			return
-		}
+		addon.Increment()
 	} else {
 		return
 	}
 
-	// Task update: The addon has succeeded
-	_ = addon.Succeeded()
+	return
 }
