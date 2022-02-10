@@ -9,7 +9,7 @@ import (
 var (
 	// hub integration.
 	addon = hub.Addon
-	Log = hub.Log
+	Log   = hub.Log
 )
 
 const (
@@ -34,6 +34,65 @@ type Data struct {
 	Artifact     *Artifact `json:"artifact"`
 }
 
+//
+// main
+func main() {
+	addon.Run(func() (err error) {
+		// Get the addon data associated with the task.
+		d := &Data{}
+		err = addon.DataWith(d)
+		if err != nil {
+			return
+		}
+		// Validate the addon data.
+		err = d.validate()
+		if err != nil {
+			return
+		}
+		application, err := addon.Application.Get(d.Application)
+		if err != nil {
+			return
+		}
+		// Run windup.
+		windup := Windup{}
+		// Fetch repository.
+		if !d.Binary {
+			addon.Total(2)
+			if application.Repository == nil {
+				err = errors.New("Application repository not defined.")
+				return
+			}
+			var r Repository
+			r, err = newRepository(application.Repository)
+			if err != nil {
+				return
+			}
+			err = r.Fetch("/tmp/git")
+			if err == nil {
+				addon.Increment()
+				windup.repository = r
+			} else {
+				return
+			}
+		}
+		// Create the bucket.
+		bucket, err := ensureBucket(d)
+		if err == nil {
+			windup.bucket = bucket
+		} else {
+			return
+		}
+		// Run windup.
+		err = windup.Run()
+		if err == nil {
+			addon.Increment()
+		} else {
+			return
+		}
+		return
+	})
+}
+
 // validate settings.
 // Default settings not specified.
 func (d *Data) validate() (err error) {
@@ -56,67 +115,5 @@ func ensureBucket(d *Data) (bucket *api.Bucket, err error) {
 		return
 	}
 	err = addon.Bucket.Purge(bucket)
-	return
-}
-
-//
-// main
-func main() {
-	addon.Run(adapter)
-}
-
-func adapter() (err error) {
-	// Get the addon data associated with the task.
-	d := &Data{}
-	err = addon.DataWith(d)
-	if err != nil {
-		return
-	}
-	// Validate the addon data.
-	err = d.validate()
-	if err != nil {
-		return
-	}
-	application, err := addon.Application.Get(d.Application)
-	if err != nil {
-		return
-	}
-	// Run windup.
-	windup := Windup{}
-	// Fetch repository.
-	if !d.Binary {
-		addon.Total(2)
-		if application.Repository == nil {
-			err = errors.New("Application repository not defined.")
-			return
-		}
-		var r Repository
-		r, err = newRepository(application.Repository)
-		if err != nil {
-			return
-		}
-		err = r.Fetch("/tmp/git")
-		if err == nil {
-			addon.Increment()
-			windup.repository = r
-		} else {
-			return
-		}
-	}
-	// Create the bucket.
-	bucket, err := ensureBucket(d)
-	if err == nil {
-		windup.bucket = bucket
-	} else {
-		return
-	}
-	// Run windup.
-	err = windup.Run()
-	if err == nil {
-		addon.Increment()
-	} else {
-		return
-	}
-
 	return
 }
