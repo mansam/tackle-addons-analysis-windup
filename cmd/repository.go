@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"github.com/konveyor/tackle-hub/api"
-	pathlib "path"
+	"os"
 	"strings"
 )
 
@@ -52,6 +52,7 @@ func (r *Git) Fetch(path string) (err error) {
 		return
 	}
 	r.path = path
+	_ = os.RemoveAll(r.path)
 	cmd := Command{Path: "/usr/bin/git"}
 	cmd.Options.add("clone", r.URL, path)
 	err = cmd.Run()
@@ -65,8 +66,5 @@ func (r *Git) Fetch(path string) (err error) {
 //
 // Path to the fetched repository.
 func (r *Git) Path() string {
-	dir := strings.Split(pathlib.Base(r.URL), ".")[0]
-	return pathlib.Join(
-		r.path,
-		dir)
+	return r.path
 }
