@@ -47,6 +47,10 @@ type Git struct {
 //
 // Fetch the repository.
 func (r *Git) Fetch(path string) (err error) {
+	err = addon.Activity("Cloning: %s", r.URL)
+	if err != nil {
+		return
+	}
 	r.path = path
 	cmd := Command{Path: "/usr/bin/git"}
 	cmd.Options.add("clone", r.URL, path)
