@@ -17,7 +17,6 @@ type Windup struct {
 //
 // Run windup.
 func (r *Windup) Run() (err error) {
-	addon.Activity("Running windup.")
 	_ = os.Mkdir("/tmp/windup", 0755)
 	cmd := Command{Path: "/opt/windup"}
 	cmd.Options = r.options()

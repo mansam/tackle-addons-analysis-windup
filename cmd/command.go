@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"os/exec"
+	"strings"
 )
 
 //
@@ -18,6 +19,10 @@ type Command struct {
 //
 // Run command.
 func (r *Command) Run() (err error) {
+	addon.Activity(
+		"[CMD] Running: %s %s",
+		r.Path,
+		strings.Join(r.Options, " "))
 	cmd := exec.Command(r.Path, r.Options...)
 	cmd.Dir = r.Dir
 	var stdout bytes.Buffer

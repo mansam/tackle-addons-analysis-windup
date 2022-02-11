@@ -49,6 +49,7 @@ func main() {
 		if err != nil {
 			return
 		}
+		addon.Activity("Fetching application.")
 		application, err := addon.Application.Get(d.Application)
 		if err != nil {
 			return
@@ -76,8 +77,10 @@ func main() {
 			}
 		}
 		// Create the bucket.
+		addon.Activity("Ensure bucket (Windup).")
 		bucket, err := ensureBucket(d)
 		if err == nil {
+			addon.Activity("Using bucket id=%d.", bucket.ID)
 			windup.bucket = bucket
 		} else {
 			return

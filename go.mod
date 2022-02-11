@@ -8,7 +8,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
-replace github.com/konveyor/tackle-hub => github.com/mansam/tackle-hub v0.0.0-20220210195148-7cc759621cde
+replace github.com/konveyor/tackle-hub => github.com/mansam/tackle-hub v0.0.0-20220211170149-8180d6dc34c3
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
 
