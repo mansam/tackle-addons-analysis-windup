@@ -4,7 +4,6 @@ import (
 	"errors"
 	hub "github.com/konveyor/tackle-hub/addon"
 	"github.com/konveyor/tackle-hub/api"
-	"time"
 )
 
 var (
@@ -40,8 +39,6 @@ type Data struct {
 func main() {
 	addon.Run(func() (err error) {
 		// Get the addon data associated with the task.
-		addon.Activity("SLEEPING")
-		time.Sleep(5*time.Minute)
 		d := &Data{}
 		err = addon.DataWith(d)
 		if err != nil {
