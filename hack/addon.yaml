@@ -4,4 +4,4 @@ apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: windup
 spec:
-  image: quay.io/jortel/tackle-windup-addon
+  image: quay.io/jortel/tackle-addon-windup
