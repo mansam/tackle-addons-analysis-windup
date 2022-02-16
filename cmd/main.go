@@ -129,11 +129,13 @@ func main() {
 //
 // Paused for container inspection.
 func paused(d *Data, at string) {
-	if d.Debug > 0 {
-		d := time.Minute * d.Debug
-		addon.Activity("[Debug] paused at: %s for: %v", at, d)
-		time.Sleep(d)
+	if d.Debug == 0 {
+		return
 	}
+	m := time.Minute * d.Debug
+	addon.Activity("[Debug] paused at: %s for: %v", at, m)
+	time.Sleep(m)
+	addon.Activity("[Debug] Resumed.")
 }
 
 //
