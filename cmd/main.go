@@ -4,6 +4,7 @@ import (
 	"errors"
 	hub "github.com/konveyor/tackle-hub/addon"
 	"github.com/konveyor/tackle-hub/api"
+	"os"
 	"time"
 )
 
@@ -54,6 +55,8 @@ func (d *Data) validate() (err error) {
 // main
 func main() {
 	addon.Run(func() (err error) {
+		windup := Windup{}
+		//
 		// Get the addon data associated with the task.
 		d := &Data{}
 		err = addon.DataWith(d)
@@ -66,18 +69,21 @@ func main() {
 		defer func() {
 			paused(d, "ENDED")
 		}()
+		addon.Activity("Working in: %s", cwd())
+		//
 		// Validate the addon data.
 		err = d.validate()
 		if err != nil {
 			return
 		}
+		//
+		// Fetch application.
 		addon.Activity("Fetching application.")
 		application, err := addon.Application.Get(d.Application)
 		if err != nil {
 			return
 		}
-		// Run windup.
-		windup := Windup{}
+		//
 		// Fetch repository.
 		if !d.Binary {
 			addon.Total(2)
@@ -98,6 +104,7 @@ func main() {
 				return
 			}
 		}
+		//
 		// Create the bucket.
 		addon.Activity("Ensure bucket (Windup).")
 		bucket, err := ensureBucket(d)
@@ -107,6 +114,7 @@ func main() {
 		} else {
 			return
 		}
+		//
 		// Run windup.
 		err = windup.Run()
 		if err == nil {
@@ -136,5 +144,12 @@ func ensureBucket(d *Data) (bucket *api.Bucket, err error) {
 		return
 	}
 	err = addon.Bucket.Purge(bucket)
+	return
+}
+
+//
+// cwd
+func cwd() (path string) {
+	path, _ = os.Getwd()
 	return
 }
