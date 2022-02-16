@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/konveyor/tackle-hub/api"
-	"os"
 )
 
 //
@@ -17,10 +16,8 @@ type Windup struct {
 //
 // Run windup.
 func (r *Windup) Run() (err error) {
-	_ = os.Mkdir("/tmp/windup", 0755)
 	cmd := Command{Path: "/opt/windup"}
 	cmd.Options = r.options()
-	cmd.Dir = "/tmp/windup"
 	err = cmd.Run()
 	if err != nil {
 		return

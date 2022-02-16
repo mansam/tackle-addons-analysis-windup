@@ -8,7 +8,7 @@ curl -X POST ${host}/tasks -d \
     "locator": "windup",
     "addon": "windup",
     "data": {
-      "application": 3,
-      "path": "/etc"
+      "debug": 3,
+      "application": 3
     }
 }' | jq -M .

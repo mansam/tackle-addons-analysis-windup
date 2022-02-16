@@ -4,12 +4,12 @@ import (
 	"errors"
 	hub "github.com/konveyor/tackle-hub/addon"
 	"github.com/konveyor/tackle-hub/api"
+	"time"
 )
 
 var (
 	// hub integration.
 	addon = hub.Addon
-	Log   = hub.Log
 )
 
 const (
@@ -26,12 +26,28 @@ type Artifact struct {
 //
 // Data Addon data passed in the secret.
 type Data struct {
-	Application  uint      `json:"application" binding:"required"`
-	Binary       bool      `json:"binary"`
-	Dependencies bool      `json:"dependencies"`
-	Targets      []string  `json:"targets"`
-	Packages     []string  `json:"packages"`
-	Artifact     *Artifact `json:"artifact"`
+	Application  uint          `json:"application" binding:"required"`
+	Binary       bool          `json:"binary"`
+	Dependencies bool          `json:"dependencies"`
+	Targets      []string      `json:"targets"`
+	Packages     []string      `json:"packages"`
+	Artifact     *Artifact     `json:"artifact"`
+	Debug        time.Duration `json:"debug"`
+}
+
+//
+// validate settings.
+// Default settings not specified.
+func (d *Data) validate() (err error) {
+	if d.Application == 0 {
+		err = errors.New("Application not specified.")
+		return
+	}
+	if len(d.Targets) == 0 {
+		d.Targets = []string{DefaultTarget}
+	}
+
+	return
 }
 
 //
@@ -44,6 +60,12 @@ func main() {
 		if err != nil {
 			return
 		}
+		//
+		// Debugging.
+		paused(d, "STARTED")
+		defer func() {
+			paused(d, "ENDED")
+		}()
 		// Validate the addon data.
 		err = d.validate()
 		if err != nil {
@@ -68,7 +90,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			err = r.Fetch("/tmp/git")
+			err = r.Fetch("git")
 			if err == nil {
 				addon.Increment()
 				windup.repository = r
@@ -80,7 +102,7 @@ func main() {
 		addon.Activity("Ensure bucket (Windup).")
 		bucket, err := ensureBucket(d)
 		if err == nil {
-			addon.Activity("Using bucket id=%d.", bucket.ID)
+			addon.Activity("Using bucket id:%d at:%s.", bucket.ID, bucket.Path)
 			windup.bucket = bucket
 		} else {
 			return
@@ -96,18 +118,14 @@ func main() {
 	})
 }
 
-// validate settings.
-// Default settings not specified.
-func (d *Data) validate() (err error) {
-	if d.Application == 0 {
-		err = errors.New("Application not specified.")
-		return
+//
+// Paused for container inspection.
+func paused(d *Data, at string) {
+	if d.Debug > 0 {
+		d := time.Minute * d.Debug
+		addon.Activity("[Debug] paused at: %s for: %v", at, d)
+		time.Sleep(d)
 	}
-	if len(d.Targets) == 0 {
-		d.Targets = []string{DefaultTarget}
-	}
-
-	return
 }
 
 //
