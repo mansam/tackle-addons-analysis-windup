@@ -69,7 +69,6 @@ func main() {
 		defer func() {
 			paused(d, "ENDED")
 		}()
-		addon.Activity("Working in: %s", cwd())
 		//
 		// Validate the addon data.
 		err = d.validate()
