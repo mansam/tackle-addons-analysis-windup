@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/konveyor/tackle-hub/api"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -63,5 +64,5 @@ func (r *Git) Fetch(path string) (err error) {
 //
 // Path to the fetched repository.
 func (r *Git) Path() string {
-	return r.path
+	return path.Join(cwd(), r.path)
 }
